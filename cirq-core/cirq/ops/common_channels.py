@@ -842,6 +842,15 @@ class PhaseDampingChannel(raw_types.Gate):
     def _has_kraus_(self) -> bool:
         return True
 
+    def _mixture_(self) -> Sequence[tuple[float, np.ndarray]]:
+        # Phase damping is equivalent to a phase flip with probability
+        # p = (1 - sqrt(1 - gamma)) / 2.
+        p = (1.0 - np.sqrt(1.0 - self._gamma)) / 2.0
+        return ((1.0 - p, np.eye(2)), (p, np.diag([1.0, -1.0])))
+
+    def _has_mixture_(self) -> bool:
+        return True
+
     def _value_equality_values_(self):
         return self._gamma
 

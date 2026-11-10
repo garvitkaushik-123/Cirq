@@ -552,7 +552,20 @@ def test_phase_damping_channel() -> None:
         ),
     )
     cirq.testing.assert_consistent_channel(d)
-    assert not cirq.has_mixture(d)
+    cirq.testing.assert_consistent_mixture(d)
+    assert cirq.has_mixture(d)
+
+
+@pytest.mark.parametrize('gamma', [0, 0.1, 0.3, 0.5, 0.9, 1])
+def test_phase_damping_mixture_matches_kraus(gamma: float) -> None:
+    # Regression test for https://github.com/quantumlib/Cirq/issues/4578
+    d = cirq.phase_damp(gamma)
+    assert cirq.has_mixture(d)
+    np.testing.assert_allclose(
+        cirq.kraus_to_superoperator(cirq.kraus(d)),
+        cirq.kraus_to_superoperator(tuple(np.sqrt(p) * u for p, u in cirq.mixture(d))),
+        atol=1e-8,
+    )
 
 
 def test_phase_damping_channel_repr() -> None:
